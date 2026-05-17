@@ -1,13 +1,31 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { auditEvents } from '../../data/mock'
+import { computed, onMounted, ref } from 'vue'
+import type { AuditEvent } from '../../types'
+import { getAuditEvents } from '../../api/auditApi'
 
+const auditEvents = ref<AuditEvent[]>([])
 const search = ref('')
+const loading = ref(false)
+const error = ref('')
 
-const filteredEvents = computed(() => auditEvents.filter(event => {
+const filteredEvents = computed(() => auditEvents.value.filter(event => {
   const text = `${event.actor} ${event.action} ${event.description}`.toLowerCase()
   return text.includes(search.value.toLowerCase())
 }))
+
+async function loadAuditEvents(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    auditEvents.value = await getAuditEvents()
+  } catch {
+    error.value = 'Не удалось загрузить журнал аудита.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadAuditEvents)
 </script>
 
 <template>
@@ -19,6 +37,9 @@ const filteredEvents = computed(() => auditEvents.filter(event => {
   <section class="card toolbar">
     <input v-model="search" type="text" placeholder="Фильтр по пользователю, событию или описанию" />
   </section>
+
+  <p v-if="error" class="error-text">{{ error }}</p>
+  <p v-if="loading" class="muted">Загрузка аудита...</p>
 
   <section class="card table-card">
     <table>

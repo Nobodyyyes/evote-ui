@@ -1,19 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { elections } from '../data/mock'
+import type { Election } from '../types'
+import { getElectionResults } from '../api/electionApi'
 
 const route = useRoute()
-const election = computed(() => elections.find(item => item.id === Number(route.params.id)))
+const election = ref<Election | null>(null)
+const loading = ref(false)
+const error = ref('')
 const totalVotes = computed(() => election.value?.options.reduce((sum, option) => sum + option.votes, 0) ?? 0)
 
 function percent(votes: number): number {
   if (totalVotes.value === 0) return 0
   return Math.round((votes / totalVotes.value) * 100)
 }
+
+async function loadResults(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    election.value = await getElectionResults(String(route.params.id))
+  } catch {
+    error.value = 'Не удалось загрузить результаты.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadResults)
 </script>
 
 <template>
+  <p v-if="loading" class="muted">Загрузка результатов...</p>
+  <p v-if="error" class="error-text">{{ error }}</p>
+
   <section v-if="election" class="card details-card">
     <h1>Результаты</h1>
     <p class="muted large-text">{{ election.title }}</p>

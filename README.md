@@ -1,6 +1,15 @@
 # EVote UI
 
-Простой frontend для дипломной работы по электронной системе голосования.
+Простой frontend для дипломного проекта электронной системы голосования.
+
+Стек:
+
+- Vue 3
+- Vite
+- TypeScript
+- Vue Router
+- REST API Spring Boot
+- JWT Bearer Authorization
 
 ## Запуск
 
@@ -9,31 +18,88 @@ npm install
 npm run dev
 ```
 
-Откройте адрес из консоли, обычно: `http://localhost:5173`.
+Обычно приложение откроется на:
 
-## Демо-логины
+```text
+http://localhost:5173
+```
 
-Пароль можно указать любой непустой.
+## Подключение к backend
 
-- `voter` — избиратель
-- `admin` — администратор
-- `auditor` — аудитор
+Создай файл `.env` рядом с `package.json`:
 
-## Что уже есть
+```bash
+cp .env .env
+```
 
-- Главная страница
-- Вход и регистрация
-- Личный кабинет
-- Список голосований
-- Детали голосования
-- Форма подачи голоса
-- Результаты
-- Профиль
-- Админ-панель
-- Управление голосованиями
-- Управление пользователями
-- Журнал аудита
-- Проверка целостности
-- Blockchain-записи
+Пример `.env`:
 
-Пока данные моковые и лежат в `src/data/mock.ts`. Когда backend будет готов, этот файл можно заменить на REST-запросы к Spring API.
+```env
+VITE_API_BASE_URL=http://localhost:8080
+VITE_API_PREFIX=/api/v1
+VITE_USE_MOCKS=false
+```
+
+Если у тебя backend endpoints начинаются с `/api/auth/login`, а не `/api/v1/auth/login`, поставь:
+
+```env
+VITE_API_PREFIX=/api
+```
+
+## Где находится интеграция
+
+Основные файлы:
+
+```text
+src/api/config.ts          # базовый URL backend и prefix API
+src/api/http.ts            # общий fetch-клиент, Bearer token, refresh token
+src/api/tokenStorage.ts    # хранение accessToken/refreshToken
+src/api/authApi.ts         # login/register/logout/me
+src/api/electionApi.ts     # список голосований, детали, создание, голосование, результаты
+src/api/userApi.ts         # пользователи, роли, блокировка
+src/api/auditApi.ts        # журнал аудита
+src/api/integrityApi.ts    # integrity/blockchain
+src/api/normalizers.ts     # адаптация DTO backend к UI-моделям
+src/store/auth.ts          # состояние авторизации
+```
+
+## Ожидаемые endpoints
+
+По умолчанию frontend ожидает такие endpoints:
+
+```text
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+POST /api/v1/auth/register
+GET  /api/v1/users/me
+
+GET  /api/v1/elections
+GET  /api/v1/elections/{id}
+GET  /api/v1/elections/{id}/options
+POST /api/v1/elections
+POST /api/v1/elections/{id}/start
+POST /api/v1/elections/{id}/finish
+POST /api/v1/elections/{id}/votes
+GET  /api/v1/elections/{id}/results
+
+GET   /api/v1/users
+PATCH /api/v1/users/{id}/role
+PATCH /api/v1/users/{id}/block
+PATCH /api/v1/users/{id}/unblock
+
+GET  /api/v1/audit
+GET  /api/v1/integrity/records
+POST /api/v1/integrity/check
+GET  /api/v1/blockchain/records
+```
+
+Важно: при отправке голоса frontend отправляет только `optionId`. `userId` не отправляется, потому что backend должен брать пользователя из JWT.
+
+## Режим моков
+
+Если backend временно не готов, можно включить старые моковые данные:
+
+```env
+VITE_USE_MOCKS=true
+```

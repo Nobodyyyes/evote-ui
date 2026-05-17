@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { elections } from '../../data/mock'
+import { createElection } from '../../api/electionApi'
 
 const router = useRouter()
 const title = ref('')
@@ -10,6 +10,7 @@ const startsAt = ref('')
 const endsAt = ref('')
 const options = ref<string[]>(['', ''])
 const error = ref('')
+const saving = ref(false)
 
 function addOption(): void {
   options.value.push('')
@@ -20,7 +21,7 @@ function removeOption(index: number): void {
   options.value.splice(index, 1)
 }
 
-function save(): void {
+async function save(): Promise<void> {
   error.value = ''
   const filledOptions = options.value.filter(option => option.trim())
 
@@ -29,21 +30,21 @@ function save(): void {
     return
   }
 
-  elections.push({
-    id: Date.now(),
-    title: title.value,
-    description: description.value,
-    status: 'DRAFT',
-    startsAt: startsAt.value,
-    endsAt: endsAt.value,
-    participants: 0,
-    voted: false,
-    resultHash: 'res_pending',
-    voteHash: 'vote_pending',
-    options: filledOptions.map((option, index) => ({ id: index + 1, text: option, votes: 0 }))
-  })
-
-  router.push('/admin/elections')
+  saving.value = true
+  try {
+    await createElection({
+      title: title.value,
+      description: description.value,
+      startsAt: startsAt.value,
+      endsAt: endsAt.value,
+      options: filledOptions
+    })
+    router.push('/admin/elections')
+  } catch {
+    error.value = 'Не удалось сохранить голосование.'
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -70,7 +71,7 @@ function save(): void {
       <p v-if="error" class="error-text">{{ error }}</p>
 
       <div class="actions">
-        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <button class="btn btn-primary" type="submit" :disabled="saving">{{ saving ? 'Сохранение...' : 'Сохранить' }}</button>
         <RouterLink class="btn btn-light" to="/admin/elections">Отмена</RouterLink>
       </div>
     </form>

@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { login } from '../store/auth'
+import { authState, login } from '../store/auth'
 
 const router = useRouter()
-const loginValue = ref('voter')
+const username = ref('voter')
 const password = ref('1234')
 const error = ref('')
 
-function submit(): void {
+async function submit(): Promise<void> {
   error.value = ''
 
-  const success = login(loginValue.value, password.value)
+  const success = await login(username.value, password.value)
   if (!success) {
-    error.value = 'Введите логин/email и пароль'
+    error.value = 'Не удалось войти. Проверьте логин/email и пароль.'
     return
   }
 
@@ -24,12 +24,12 @@ function submit(): void {
 <template>
   <section class="auth-card card">
     <h1>Вход</h1>
-    <p class="muted">Для демо: voter / admin / auditor, пароль любой непустой.</p>
+    <p class="muted">Введите логин или email пользователя из backend.</p>
 
     <form @submit.prevent="submit" class="form">
       <label>
         Логин или email
-        <input v-model="loginValue" type="text" placeholder="voter" />
+        <input v-model="username" type="text" placeholder="voter" />
       </label>
 
       <label>
@@ -39,7 +39,9 @@ function submit(): void {
 
       <p v-if="error" class="error-text">{{ error }}</p>
 
-      <button class="btn btn-primary" type="submit">Войти</button>
+      <button class="btn btn-primary" type="submit" :disabled="authState.loading">
+        {{ authState.loading ? 'Вход...' : 'Войти' }}
+      </button>
     </form>
   </section>
 </template>

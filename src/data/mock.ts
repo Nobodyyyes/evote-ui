@@ -54,10 +54,10 @@ export const elections: Election[] = [
 ]
 
 export const users: User[] = [
-  { id: 1, fullName: 'Администратор системы', username: 'admin', email: 'admin@evote.local', role: 'ADMIN', status: 'ACTIVE', registeredAt: '2026-01-10' },
-  { id: 2, fullName: 'Аудитор системы', username: 'auditor', email: 'auditor@evote.local', role: 'AUDITOR', status: 'ACTIVE', registeredAt: '2026-01-12' },
-  { id: 3, fullName: 'Обычный пользователь', username: 'voter', email: 'voter@evote.local', role: 'VOTER', status: 'ACTIVE', registeredAt: '2026-02-01' },
-  { id: 4, fullName: 'Заблокированный пользователь', username: 'blocked', email: 'blocked@evote.local', role: 'VOTER', status: 'BLOCKED', registeredAt: '2026-02-15' }
+  { id: 1, fullName: 'Администратор системы', username: 'admin', email: 'admin@evote.local', role: 'ADMIN', status: 'ACTIVE', createdAt: '2026-01-10' },
+  { id: 2, fullName: 'Аудитор системы', username: 'auditor', email: 'auditor@evote.local', role: 'AUDITOR', status: 'ACTIVE', createdAt: '2026-01-12' },
+  { id: 3, fullName: 'Обычный пользователь', username: 'voter', email: 'voter@evote.local', role: 'VOTER', status: 'ACTIVE', createdAt: '2026-02-01' },
+  { id: 4, fullName: 'Заблокированный пользователь', username: 'blocked', email: 'blocked@evote.local', role: 'VOTER', status: 'BLOCKED', createdAt: '2026-02-15' }
 ]
 
 export const auditEvents: AuditEvent[] = [

@@ -1,19 +1,36 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { elections } from '../data/mock'
-import type { ElectionStatus } from '../types'
+import { computed, onMounted, ref } from 'vue'
+import type { Election, ElectionStatus } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
+import { getElections } from '../api/electionApi'
 
+const elections = ref<Election[]>([])
 const search = ref('')
 const status = ref<'ALL' | ElectionStatus>('ALL')
+const loading = ref(false)
+const error = ref('')
 
 const filteredElections = computed(() => {
-  return elections.filter(election => {
+  return elections.value.filter(election => {
     const matchesSearch = election.title.toLowerCase().includes(search.value.toLowerCase())
     const matchesStatus = status.value === 'ALL' || election.status === status.value
     return matchesSearch && matchesStatus
   })
 })
+
+async function loadElections(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    elections.value = await getElections()
+  } catch {
+    error.value = 'Не удалось загрузить список голосований.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadElections)
 </script>
 
 <template>
@@ -32,6 +49,9 @@ const filteredElections = computed(() => {
       <option value="FINISHED">Завершено</option>
     </select>
   </section>
+
+  <p v-if="error" class="error-text">{{ error }}</p>
+  <p v-if="loading" class="muted">Загрузка голосований...</p>
 
   <section class="grid grid-2">
     <article v-for="election in filteredElections" :key="election.id" class="card election-card">

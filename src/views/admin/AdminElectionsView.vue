@@ -1,16 +1,38 @@
 <script setup lang="ts">
-import { elections } from '../../data/mock'
+import { onMounted, ref } from 'vue'
+import type { Election, Id } from '../../types'
+import { getElections, updateElectionStatus } from '../../api/electionApi'
 import StatusBadge from '../../components/StatusBadge.vue'
 
-function updateStatus(id: number, status: 'ACTIVE' | 'FINISHED'): void {
-  const election = elections.find(item => item.id === id)
-  if (!election) return
+const elections = ref<Election[]>([])
+const loading = ref(false)
+const error = ref('')
 
-  const message = status === 'ACTIVE' ? 'Запустить голосование?' : 'Завершить голосование?'
-  if (window.confirm(message)) {
-    election.status = status
+async function loadElections(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    elections.value = await getElections()
+  } catch {
+    error.value = 'Не удалось загрузить голосования.'
+  } finally {
+    loading.value = false
   }
 }
+
+async function updateStatus(id: Id, status: 'ACTIVE' | 'FINISHED'): Promise<void> {
+  const message = status === 'ACTIVE' ? 'Запустить голосование?' : 'Завершить голосование?'
+  if (!window.confirm(message)) return
+
+  try {
+    await updateElectionStatus(id, status)
+    await loadElections()
+  } catch {
+    error.value = 'Не удалось изменить статус голосования.'
+  }
+}
+
+onMounted(loadElections)
 </script>
 
 <template>
@@ -21,6 +43,9 @@ function updateStatus(id: number, status: 'ACTIVE' | 'FINISHED'): void {
     </div>
     <RouterLink class="btn btn-primary" to="/admin/elections/create">Создать</RouterLink>
   </section>
+
+  <p v-if="error" class="error-text">{{ error }}</p>
+  <p v-if="loading" class="muted">Загрузка голосований...</p>
 
   <section class="card table-card">
     <table>

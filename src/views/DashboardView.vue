@@ -1,22 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { elections } from '../data/mock'
+import { computed, onMounted, ref } from 'vue'
 import { authState } from '../store/auth'
 import StatusBadge from '../components/StatusBadge.vue'
+import type { Election } from '../types'
+import { getElections } from '../api/electionApi'
 
-const activeCount = computed(() => elections.filter(e => e.status === 'ACTIVE').length)
-const finishedCount = computed(() => elections.filter(e => e.status === 'FINISHED').length)
+const elections = ref<Election[]>([])
+const loading = ref(false)
+const error = ref('')
+
+const activeCount = computed(() => elections.value.filter(e => e.status === 'ACTIVE').length)
+const finishedCount = computed(() => elections.value.filter(e => e.status === 'FINISHED').length)
+
+async function loadDashboard(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    elections.value = await getElections()
+  } catch {
+    error.value = 'Не удалось загрузить данные личного кабинета.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadDashboard)
 </script>
 
 <template>
   <section class="page-title">
     <h1>Личный кабинет</h1>
-    <p class="muted">Краткая информация о пользователе и доступных голосованиях.</p>
+    <p class="muted">Информация о пользователе и голосованиях.</p>
   </section>
+
+  <p v-if="error" class="error-text">{{ error }}</p>
+  <p v-if="loading" class="muted">Загрузка данных...</p>
 
   <section class="grid grid-3">
     <article class="card stat-card">
-      <span class="stat-value">{{ authState.user?.fullName }}</span>
+      <span class="stat-value">{{ authState.user?.username }}</span>
       <span class="muted">Текущий пользователь</span>
     </article>
     <article class="card stat-card">

@@ -1,6 +1,27 @@
 <script setup lang="ts">
-import { elections } from '../data/mock'
-import { authState } from '../store/auth'
+import {computed, onMounted, ref} from 'vue'
+import {getElections} from '../api/electionApi'
+import {authState} from '../store/auth'
+import type {Election} from '../types'
+
+const elections = ref<Election[]>([])
+const loading = ref(false)
+const error = ref('')
+const votedElections = computed(() => elections.value.filter(e => e.voted))
+
+async function loadProfileData(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    elections.value = await getElections()
+  } catch {
+    error.value = 'Не удалось загрузить историю участия.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadProfileData)
 </script>
 
 <template>
@@ -9,24 +30,28 @@ import { authState } from '../store/auth'
     <p class="muted">Данные текущего пользователя.</p>
   </section>
 
+  <p v-if="error" class="error-text">{{ error }}</p>
+  <p v-if="loading" class="muted">Загрузка профиля...</p>
+
   <section class="grid grid-2">
     <article class="card">
       <h2>Основная информация</h2>
-      <p><strong>ФИО:</strong> {{ authState.user?.fullName }}</p>
+      <p><strong>Пользователь:</strong> {{ authState.user?.firstname }} {{ authState.user?.name }}</p>
       <p><strong>Логин:</strong> {{ authState.user?.username }}</p>
       <p><strong>Email:</strong> {{ authState.user?.email }}</p>
       <p><strong>Роль:</strong> {{ authState.user?.role }}</p>
-      <p><strong>Дата регистрации:</strong> {{ authState.user?.registeredAt }}</p>
-      <button class="btn btn-light">Изменить пароль</button>
+      <p><strong>Дата и время регистрации:</strong> {{ authState.user?.createdAt }}</p>
+      <button class="btn btn-light" type="button">Изменить пароль</button>
     </article>
 
     <article class="card">
       <h2>История участия</h2>
       <div class="simple-list">
-        <div v-for="election in elections.filter(e => e.voted)" :key="election.id" class="list-row">
+        <div v-for="election in votedElections" :key="election.id" class="list-row">
           <span>{{ election.title }}</span>
           <span class="muted">Участвовал</span>
         </div>
+        <p v-if="!votedElections.length" class="muted">История участия пока пустая.</p>
       </div>
     </article>
   </section>

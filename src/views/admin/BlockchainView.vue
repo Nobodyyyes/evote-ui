@@ -1,6 +1,26 @@
 <script setup lang="ts">
-import { blockchainRecords } from '../../data/mock'
+import { onMounted, ref } from 'vue'
+import type { BlockchainRecord } from '../../types'
+import { getBlockchainRecords } from '../../api/integrityApi'
 import StatusBadge from '../../components/StatusBadge.vue'
+
+const blockchainRecords = ref<BlockchainRecord[]>([])
+const loading = ref(false)
+const error = ref('')
+
+async function loadBlockchainRecords(): Promise<void> {
+  loading.value = true
+  error.value = ''
+  try {
+    blockchainRecords.value = await getBlockchainRecords()
+  } catch {
+    error.value = 'Не удалось загрузить blockchain-записи.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadBlockchainRecords)
 </script>
 
 <template>
@@ -8,6 +28,9 @@ import StatusBadge from '../../components/StatusBadge.vue'
     <h1>Blockchain-записи</h1>
     <p class="muted">Контрольные записи, хэши и идентификаторы транзакций.</p>
   </section>
+
+  <p v-if="error" class="error-text">{{ error }}</p>
+  <p v-if="loading" class="muted">Загрузка blockchain-записей...</p>
 
   <section class="card table-card">
     <table>
