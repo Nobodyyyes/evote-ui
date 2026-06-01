@@ -65,35 +65,50 @@ async function refreshAccessToken(): Promise<boolean> {
 }
 
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers = new Headers(options.headers)
-  const token = getAccessToken()
+    const headers = new Headers(options.headers)
+    const token = getAccessToken()
 
-  if (!options.skipAuth && token) {
-    headers.set('Authorization', `Bearer ${token}`)
-  }
-
-  if (options.body !== undefined && !isFormData(options.body)) {
-    headers.set('Content-Type', 'application/json')
-  }
-
-  const response = await fetch(`${API_BASE_URL}${apiPath(path)}`, {
-    ...options,
-    headers,
-    body: isFormData(options.body) ? options.body : options.body !== undefined ? JSON.stringify(options.body) : undefined
-  })
-
-  if (response.status === 401 && options.retry !== false && !options.skipAuth) {
-    const refreshed = await refreshAccessToken()
-    if (refreshed) {
-      return apiFetch<T>(path, { ...options, retry: false })
+    if (!options.skipAuth && token) {
+        headers.set('Authorization', `Bearer ${token}`)
     }
-  }
 
-  const body = await parseResponse(response)
+    if (options.body !== undefined && !isFormData(options.body)) {
+        headers.set('Content-Type', 'application/json')
+    }
 
-  if (!response.ok) {
-    throw new ApiError(response.status, extractErrorMessage(body, `Ошибка API: ${response.status}`), body)
-  }
+    const url = `${API_BASE_URL}${apiPath(path)}`
 
-  return body as T
+    console.log('[API REQUEST]', {
+        method: options.method ?? 'GET',
+        url,
+        skipAuth: options.skipAuth,
+        tokenExists: Boolean(token),
+        authorization: headers.get('Authorization'),
+        body: options.body
+    })
+
+    const response = await fetch(url, {
+        ...options,
+        headers,
+        body: isFormData(options.body)
+            ? options.body
+            : options.body !== undefined
+                ? JSON.stringify(options.body)
+                : undefined
+    })
+
+    if (response.status === 401 && options.retry !== false && !options.skipAuth) {
+        const refreshed = await refreshAccessToken()
+        if (refreshed) {
+            return apiFetch<T>(path, { ...options, retry: false })
+        }
+    }
+
+    const body = await parseResponse(response)
+
+    if (!response.ok) {
+        throw new ApiError(response.status, extractErrorMessage(body, `Ошибка API: ${response.status}`), body)
+    }
+
+    return body as T
 }

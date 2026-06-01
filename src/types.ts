@@ -1,7 +1,8 @@
 export type Id = string
 export type Role = 'USER' | 'ADMIN' | 'AUDITOR'
-export type UserStatus = 'ACTIVE' | 'BLOCKED'
 export type ElectionStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'FINISHED'
+export type ElectionResultVisibilityType = 'AFTER_FINISH' | 'AFTER_PUBLISH'
+export type AccessElectionType = 'ALL_AUTHORIZED_USERS' | 'SELECTED_USERS_ONLY'
 
 export interface User {
     id: string
@@ -15,23 +16,22 @@ export interface User {
 }
 
 export interface ElectionOption {
-    id: Id
     text: string
-    votes: number
+    orderNumber: number
 }
 
 export interface Election {
-    id: Id
-    title: string
+    id: string
+    name: string
     description: string
+    startDateTime: string
+    endDateTime: string
+    createdAt: string
     status: ElectionStatus
-    startsAt: string
-    endsAt: string
-    participants: number
-    voted: boolean
-    options: ElectionOption[]
-    resultHash: string
-    voteHash: string
+    resultVisibilityType: ElectionResultVisibilityType
+    resultPublished: boolean
+    creatorInfo: string
+    accessElectionType: AccessElectionType
 }
 
 export interface AuditEvent {
@@ -52,11 +52,7 @@ export interface BlockchainRecord {
     fixedAt: string
 }
 
-export interface LoginRequest {
-    username: string
-    password: string
-}
-
+// Request block
 export interface RegisterRequest {
     firstname: string
     name: string
@@ -66,23 +62,39 @@ export interface RegisterRequest {
     confirmPassword: string
 }
 
-export interface AuthResponse {
-    accessToken: string
-    refreshToken?: string
-    tokenType?: string
-    expiresIn?: number
-    user?: User
+export interface LoginRequest {
+    username: string
+    password: string
 }
 
 export interface CreateElectionRequest {
-    title: string
+    name: string
     description: string
-    startsAt: string
-    endsAt: string
+    startDateTime: string
+    endDateTime: string
+    creatorInfo: string
+    accessElectionType: AccessElectionType
+}
+
+export interface CreateElectionOptionRequest {
+    text: string
+    orderNumber: number
+}
+
+export interface CreateElectionWithOptionsRequest extends CreateElectionRequest {
     options: string[]
 }
 
 export interface CastVoteRequest {
     electionId: Id
     optionId: Id
+}
+
+// Response block
+export interface AuthResponse {
+    accessToken: string
+    refreshToken?: string
+    tokenType?: string
+    expiresIn?: number
+    user?: User
 }

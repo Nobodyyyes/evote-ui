@@ -57,7 +57,7 @@ onMounted(loadElections)
     <article v-for="election in filteredElections" :key="election.id" class="card election-card">
       <div class="card-topline">
         <StatusBadge :status="election.status" />
-        <span class="muted">{{ election.startsAt }} — {{ election.endsAt }}</span>
+        <span class="muted">{{ election.startDateTime }} — {{ election.endDateTime }}</span>
       </div>
       <h2>{{ election.title }}</h2>
       <p class="muted">{{ election.description }}</p>

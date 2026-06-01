@@ -1,8 +1,8 @@
 import {reactive} from 'vue'
-import type {Role, User} from '../types'
+import type {AuthResponse, Role, User} from '../types'
 import {getCurrentUserRequest, loginRequest, logoutRequest, registerRequest} from '../api/authApi'
 import {clearTokens, getAccessToken, getRefreshToken, saveTokens} from '../api/tokenStorage'
-import {userFromToken} from '../api/normalizers'
+import {normalizeUser, userFromToken} from '../api/normalizers'
 
 const USER_STORAGE_KEY = 'evote-user'
 
@@ -32,18 +32,55 @@ function clearUser(): void {
     localStorage.removeItem(USER_STORAGE_KEY)
 }
 
+async function handleAuthResponse(response: AuthResponse): Promise<boolean> {
+    console.log('[AUTH RESPONSE]', response)
+
+    if (!response.accessToken) {
+        console.error('Backend не вернул accessToken')
+        return false
+    }
+
+    saveTokens(response.accessToken, response.refreshToken)
+    authState.accessToken = response.accessToken
+
+    console.log('[SAVED ACCESS TOKEN]', getAccessToken())
+
+    if (response.user) {
+        saveUser(normalizeUser(response.user))
+        return true
+    }
+
+    const userFromJwt = userFromToken(response.accessToken)
+
+    if (userFromJwt) {
+        saveUser(userFromJwt)
+        return true
+    }
+
+    try {
+        const currentUser = await getCurrentUserRequest()
+        saveUser(currentUser)
+    } catch (error) {
+        console.warn('Токен сохранён, но данные пользователя получить не удалось', error)
+    }
+
+    return true
+}
+
 export async function login(username: string, password: string): Promise<boolean> {
-    if (!username.trim() || !password.trim()) return false
+    if (!username.trim() || !password.trim()) {
+        return false
+    }
 
     authState.loading = true
-    try {
-        const response = await loginRequest({username: username, password})
-        saveTokens(response.accessToken, response.refreshToken)
-        authState.accessToken = response.accessToken
 
-        const user = response.user ?? userFromToken(response.accessToken) ?? await getCurrentUserRequest()
-        saveUser(user)
-        return true
+    try {
+        const response = await loginRequest({
+            username,
+            password
+        })
+
+        return await handleAuthResponse(response)
     } catch (error) {
         console.error('Login failed', error)
         clearTokens()
@@ -54,17 +91,27 @@ export async function login(username: string, password: string): Promise<boolean
     }
 }
 
-export async function register(firstname: string,
-                               name: string,
-                               username: string,
-                               email: string,
-                               password: string,
-                               confirmPassword: string): Promise<boolean> {
-
+export async function register(
+    firstname: string,
+    name: string,
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+): Promise<boolean> {
     authState.loading = true
+
     try {
-        await registerRequest({firstname, name, username, email, password, confirmPassword})
-        return login(username, password)
+        const response = await registerRequest({
+            firstname,
+            name,
+            username,
+            email,
+            password,
+            confirmPassword
+        })
+
+        return await handleAuthResponse(response)
     } catch (error) {
         console.error('Registration failed', error)
         return false
@@ -75,6 +122,7 @@ export async function register(firstname: string,
 
 export async function logout(): Promise<void> {
     const refreshToken = getRefreshToken()
+
     try {
         if (refreshToken) {
             await logoutRequest(refreshToken)
@@ -88,11 +136,13 @@ export async function logout(): Promise<void> {
 }
 
 export function hasRole(roles?: Role[]): boolean {
-    if (!roles || roles.length === 0) return true
-    if (!authState.user) return false
+    if (!roles || roles.length === 0) {
+        return true
+    }
 
-    if (roles.includes('ADMIN') && authState.user.role === 'SUPER_ADMIN') return true
-    if (roles.includes('ADMIN') && authState.user.role === 'ELECTION_ADMIN') return true
+    if (!authState.user) {
+        return false
+    }
 
     return roles.includes(authState.user.role)
 }

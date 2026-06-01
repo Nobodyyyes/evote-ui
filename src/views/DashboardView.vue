@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { authState } from '../store/auth'
+import {computed, onMounted, ref} from 'vue'
+import {authState} from '../store/auth'
 import StatusBadge from '../components/StatusBadge.vue'
-import type { Election } from '../types'
-import { getElections } from '../api/electionApi'
+import type {Election} from '../types'
+import {getElections} from '../api/electionApi'
 
 const elections = ref<Election[]>([])
 const loading = ref(false)
@@ -23,7 +23,6 @@ async function loadDashboard(): Promise<void> {
     loading.value = false
   }
 }
-
 onMounted(loadDashboard)
 </script>
 
@@ -38,16 +37,16 @@ onMounted(loadDashboard)
 
   <section class="grid grid-3">
     <article class="card stat-card">
-      <span class="stat-value">{{ authState.user?.username }}</span>
       <span class="muted">Текущий пользователь</span>
+      <span class="stat-value">{{ authState.user?.username }}</span>
     </article>
     <article class="card stat-card">
-      <span class="stat-value">{{ activeCount }}</span>
       <span class="muted">Активных голосований</span>
+      <span class="stat-value">{{ activeCount }}</span>
     </article>
     <article class="card stat-card">
-      <span class="stat-value">{{ finishedCount }}</span>
       <span class="muted">Завершенных голосований</span>
+      <span class="stat-value">{{ finishedCount }}</span>
     </article>
   </section>
 
@@ -59,7 +58,7 @@ onMounted(loadDashboard)
           <strong>{{ election.title }}</strong>
           <p class="muted">Участников: {{ election.participants }}</p>
         </div>
-        <StatusBadge :status="election.status" />
+        <StatusBadge :status="election.status"/>
       </div>
     </div>
   </section>

@@ -1,36 +1,43 @@
-import type { Id, Role, User } from '../types'
-import { users as mockUsers } from '../data/mock'
-import { apiFetch } from './http'
-import { normalizeArrayPayload, normalizeUser } from './normalizers'
-import { USE_MOCKS } from './config'
+import type {Id, Role, User} from '../types'
+import {apiFetch} from './http'
+import {normalizeArrayPayload, normalizeUser} from './normalizers'
 
+/**
+ * Получение всех пользователей системы
+ */
 export async function getUsers(): Promise<User[]> {
-  if (USE_MOCKS) return mockUsers
-  const payload = await apiFetch<unknown>('/users')
-  return normalizeArrayPayload<unknown>(payload).map(normalizeUser)
+    const payload = await apiFetch<unknown>('/users')
+    return normalizeArrayPayload<unknown>(payload).map(normalizeUser)
 }
 
-export async function updateUserRole(id: Id, role: Role): Promise<User> {
-  if (USE_MOCKS) {
-    const user = mockUsers.find(item => String(item.id) === String(id))
-    if (user) user.role = role
-    return user ?? mockUsers[0]
-  }
-  const payload = await apiFetch<unknown>(`/users/${id}/role`, {
-    method: 'PATCH',
-    body: { role }
-  })
-  return normalizeUser(payload)
+/**
+ * Обновление роли пользователя
+ *
+ * @param userId уникальный идентификатор пользователя
+ * @param role роль на которую необходимо обновить
+ */
+export async function updateUserRole(userId: Id, role: Role): Promise<User> {
+    const payload = await apiFetch<unknown>(`/users/${userId}/role`, {
+        method: 'PATCH',
+        body: {role}
+    })
+    return normalizeUser(payload)
 }
 
-export async function toggleUserStatus(id: Id, currentStatus: User['status']): Promise<User> {
-  if (USE_MOCKS) {
-    const user = mockUsers.find(item => String(item.id) === String(id))
-    if (user) user.status = user.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE'
-    return user ?? mockUsers[0]
-  }
+/**
+ * Переключение статуса пользователя
+ *
+ * @param userId уникальный идентификатор пользователя
+ * @param currentStatus текущий статус пользователя
+ */
+export async function toggleUserStatus(userId: Id, currentStatus: User['status']): Promise<User> {
+    const status = currentStatus === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE'
 
-  const action = currentStatus === 'ACTIVE' ? 'block' : 'unblock'
-  const payload = await apiFetch<unknown>(`/users/${id}/${action}`, { method: 'PATCH' })
-  return normalizeUser(payload)
+    const params = new URLSearchParams({
+        status
+    })
+    const payload = await apiFetch<unknown>(`/users/${userId}/status?${params.toString()}`, {
+        method: 'PATCH'
+    })
+    return normalizeUser(payload)
 }

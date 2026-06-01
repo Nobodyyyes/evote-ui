@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import type { AuditEvent, BlockchainRecord, Election, User } from '../../types'
-import { getAuditEvents } from '../../api/auditApi'
-import { getBlockchainRecords } from '../../api/integrityApi'
-import { getElections } from '../../api/electionApi'
-import { getUsers } from '../../api/userApi'
+import {computed, onMounted, ref} from 'vue'
+import type {AuditEvent, BlockchainRecord, Election, User} from '../../types'
+import {getAuditEvents} from '../../api/auditApi'
+import {getBlockchainRecords} from '../../api/integrityApi'
+import {getElections} from '../../api/electionApi'
+import {getUsers} from '../../api/userApi'
 
 const elections = ref<Election[]>([])
 const users = ref<User[]>([])
@@ -43,42 +43,104 @@ onMounted(loadDashboard)
 </script>
 
 <template>
-  <section class="page-title">
-    <h1>Административная панель</h1>
-    <p class="muted">Сводка по пользователям, голосованиям, аудиту и blockchain-записям.</p>
-  </section>
+  <div class="admin-page">
+    <section class="page-title admin-page-title">
+      <h1>Административная панель</h1>
+      <p class="muted">
+        Сводка по пользователям, голосованиям, аудиту и blockchain-записям.
+      </p>
+    </section>
 
-  <p v-if="error" class="error-text">{{ error }}</p>
-  <p v-if="loading" class="muted">Загрузка административной панели...</p>
+    <div class="admin-state-block">
+      <p v-if="error" class="error-text">{{ error }}</p>
+      <p v-if="loading" class="muted">Загрузка административной панели...</p>
+    </div>
 
-  <section class="grid grid-4">
-    <article class="card stat-card"><span class="stat-value">{{ users.length }}</span><span class="muted">Пользователей</span></article>
-    <article class="card stat-card"><span class="stat-value">{{ activeElections }}</span><span class="muted">Активных</span></article>
-    <article class="card stat-card"><span class="stat-value">{{ scheduledElections }}</span><span class="muted">Запланированных</span></article>
-    <article class="card stat-card"><span class="stat-value">{{ finishedElections }}</span><span class="muted">Завершенных</span></article>
-  </section>
+    <section class="grid grid-4 admin-stats-grid">
+      <article class="card stat-card">
+        <span class="muted">Пользователей</span>
+        <span class="stat-value">{{ users.length }}</span>
+      </article>
 
-  <section class="grid grid-2">
-    <article class="card">
-      <h2>Быстрые действия</h2>
-      <div class="actions vertical-actions">
-        <RouterLink class="btn btn-primary" to="/admin/elections/create">Создать голосование</RouterLink>
-        <RouterLink class="btn btn-secondary" to="/admin/integrity">Проверить целостность</RouterLink>
-        <RouterLink class="btn btn-light" to="/admin/blockchain">Blockchain-записи: {{ blockchainRecords.length }}</RouterLink>
+      <article class="card stat-card">
+        <span class="muted">Активных голосований</span>
+        <span class="stat-value">{{ activeElections }}</span>
+      </article>
+
+      <article class="card stat-card">
+        <span class="muted">Запланированных голосований</span>
+        <span class="stat-value">{{ scheduledElections }}</span>
+      </article>
+
+      <article class="card stat-card">
+        <span class="muted">Завершенных голосований</span>
+        <span class="stat-value">{{ finishedElections }}</span>
+      </article>
+    </section>
+
+    <section class="admin-section">
+      <div class="admin-section-header">
+        <h2>Разделы администрирования</h2>
+        <p class="muted">Быстрый переход к основным функциям администратора.</p>
       </div>
-    </article>
 
-    <article class="card">
-      <h2>Последние события аудита</h2>
-      <div class="simple-list">
-        <div v-for="event in auditEvents" :key="event.id" class="list-row">
-          <div>
-            <strong>{{ event.action }}</strong>
-            <p class="muted">{{ event.description }}</p>
+      <div class="admin-block-grid">
+        <RouterLink class="admin-block-card" to="/admin/elections/create">
+          <div class="admin-block-icon">＋</div>
+          <h3>Создание голосования</h3>
+          <p>Создание нового голосования, указание даты, типа доступа и вариантов ответа.</p>
+        </RouterLink>
+
+        <RouterLink class="admin-block-card" to="/admin/elections">
+          <div class="admin-block-icon">🗳</div>
+          <h3>Управление голосованиями</h3>
+          <p>Просмотр, запуск, завершение, удаление и управление статусами голосований.</p>
+        </RouterLink>
+
+        <RouterLink class="admin-block-card" to="/admin/integrity">
+          <div class="admin-block-icon">✓</div>
+          <h3>Проверка целостности</h3>
+          <p>Проверка корректности данных и контрольных записей голосований.</p>
+        </RouterLink>
+
+        <RouterLink class="admin-block-card" to="/admin/blockchain">
+          <div class="admin-block-icon">⛓</div>
+          <h3>Blockchain-записи</h3>
+          <p>Просмотр blockchain-записей и контрольных хэшей системы.</p>
+        </RouterLink>
+
+        <RouterLink class="admin-block-card" to="/admin/users">
+          <div class="admin-block-icon">👥</div>
+          <h3>Управление пользователями</h3>
+          <p>Просмотр пользователей, ролей, статусов и ограничений доступа.</p>
+        </RouterLink>
+
+        <RouterLink class="admin-block-card" to="/admin/audit">
+          <div class="admin-block-icon">📋</div>
+          <h3>Журнал аудита</h3>
+          <p>Просмотр действий пользователей и системных событий.</p>
+        </RouterLink>
+      </div>
+    </section>
+
+    <section class="admin-section audit-section">
+      <article class="card audit-card">
+        <h2>Последние события аудита</h2>
+
+        <div v-if="auditEvents.length > 0" class="simple-list">
+          <div v-for="event in auditEvents" :key="event.id" class="list-row">
+            <div>
+              <strong>{{ event.action }}</strong>
+              <p class="muted">{{ event.description }}</p>
+            </div>
+            <span class="muted">{{ event.createdAt }}</span>
           </div>
-          <span class="muted">{{ event.createdAt }}</span>
         </div>
-      </div>
-    </article>
-  </section>
+
+        <p v-else class="muted empty-text">
+          Событий аудита пока нет.
+        </p>
+      </article>
+    </section>
+  </div>
 </template>

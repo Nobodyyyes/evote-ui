@@ -11,7 +11,7 @@ const loading = ref(false)
 const error = ref('')
 
 const filteredUsers = computed(() => users.value.filter(user => {
-  const text = `${user.fullName} ${user.username} ${user.email}`.toLowerCase()
+  const text = `${user.username} ${user.email}`.toLowerCase()
   const matchesSearch = text.includes(search.value.toLowerCase())
   const matchesRole = role.value === 'ALL' || user.role === role.value
   return matchesSearch && matchesRole
@@ -74,9 +74,7 @@ onMounted(loadUsers)
     <table>
       <thead>
         <tr>
-          <th>ФИО</th>
           <th>Логин</th>
-          <th>Email</th>
           <th>Роль</th>
           <th>Статус</th>
           <th>Действие</th>
@@ -84,14 +82,12 @@ onMounted(loadUsers)
       </thead>
       <tbody>
         <tr v-for="user in filteredUsers" :key="user.id">
-          <td>{{ user.fullName }}</td>
           <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
           <td>
             <select :value="user.role" @change="changeRole(user.id, ($event.target as HTMLSelectElement).value as Role)">
-              <option value="VOTER">VOTER</option>
-              <option value="ADMIN">ADMIN</option>
-              <option value="AUDITOR">AUDITOR</option>
+              <option value="USER">Пользователь</option>
+              <option value="ADMIN">Администратор</option>
+              <option value="AUDITOR">Аудитор</option>
             </select>
           </td>
           <td><StatusBadge :status="user.status" /></td>

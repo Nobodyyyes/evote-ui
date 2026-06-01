@@ -28,7 +28,7 @@ function isAdminRole(role: string): boolean {
         <RouterLink to="/dashboard">Кабинет</RouterLink>
         <RouterLink to="/elections">Голосования</RouterLink>
         <RouterLink to="/profile">Профиль</RouterLink>
-        <RouterLink v-if="isAdminRole(user.role)" to="/admin">Админка</RouterLink>
+        <RouterLink v-if="isAdminRole(user.role)" to="/admin">Админ-панель</RouterLink>
         <RouterLink v-if="user.role === 'AUDITOR'" to="/admin/audit">Аудит</RouterLink>
       </template>
     </nav>

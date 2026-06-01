@@ -25,11 +25,20 @@ function asId(value: unknown, fallback: Id = ''): Id {
 }
 
 function normalizeRole(value: unknown): Role {
-    const role = asString(value, 'VOTER').replace('ROLE_', '').toUpperCase()
-    if (role === 'ADMIN' || role === 'AUDITOR' || role === 'SUPER_ADMIN' || role === 'ELECTION_ADMIN' || role === 'VOTER') {
-        return role
+    const role = asString(value, 'USER')
+        .replace('ROLE_', '')
+        .toUpperCase()
+
+    switch (role) {
+        case 'ADMIN':
+            return 'ADMIN'
+        case 'AUDITOR':
+            return 'AUDITOR'
+        case 'USER':
+            return 'USER'
+        default:
+            return 'USER'
     }
-    return 'VOTER'
 }
 
 function normalizeElectionStatus(value: unknown): ElectionStatus {
@@ -66,26 +75,34 @@ export function normalizeArrayPayload<T>(payload: unknown): T[] {
 
 export function normalizeUser(payload: unknown): User {
     const record = asRecord(payload)
-    const roleSource = record.role ?? record.userRole ?? (Array.isArray(record.roles) ? record.roles[0] : undefined) ?? (Array.isArray(record.authorities) ? record.authorities[0] : undefined)
+
+    const roles = Array.isArray(record.roles)
+        ? record.roles
+        : []
+
+    const roleSource =
+        record.role ??
+        record.userRole ??
+        roles[0] ??
+        (Array.isArray(record.authorities) ? record.authorities[0] : undefined)
 
     return {
         id: asId(record.id ?? record.uuid ?? record.userId, ''),
-        firstname: asString(record.firstname ?? 'Пользователь'),
-        name: asString(record.name),
+        firstname: asString(record.firstname ?? record.firstName ?? ''),
+        name: asString(record.name ?? ''),
         username: asString(record.username ?? record.login ?? record.sub, 'user'),
         email: asString(record.email, ''),
         role: normalizeRole(roleSource),
         status: asString(record.status, 'ACTIVE').toUpperCase() === 'BLOCKED' ? 'BLOCKED' : 'ACTIVE',
-        createdAt: normalizeDate(record.createdAt)
+        createdAt: normalizeDate(record.createdAt ?? record.createdDate)
     }
 }
 
 export function normalizeElectionOption(payload: unknown, index = 0): ElectionOption {
     const record = asRecord(payload)
     return {
-        id: asId(record.id ?? record.uuid ?? record.optionId, index + 1),
         text: asString(record.text ?? record.title ?? record.name ?? record.optionText, `Вариант ${index + 1}`),
-        votes: asNumber(record.votes ?? record.voteCount ?? record.count, 0)
+        orderNumber: asNumber(record.votes ?? record.voteCount ?? record.count, 0)
     }
 }
 
@@ -95,11 +112,11 @@ export function normalizeElection(payload: unknown): Election {
 
     return {
         id: asId(record.id ?? record.uuid ?? record.electionId, ''),
-        title: asString(record.title ?? record.name, 'Без названия'),
+        name: asString(record.name ?? record.name, 'Без названия'),
         description: asString(record.description, ''),
         status: normalizeElectionStatus(record.status),
-        startsAt: normalizeDate(record.startsAt ?? record.startDateTime ?? record.startAt ?? record.startDate),
-        endsAt: normalizeDate(record.endsAt ?? record.endDateTime ?? record.endAt ?? record.endDate),
+        startDateTime: normalizeDate(record.startsAt ?? record.startDateTime ?? record.startAt ?? record.startDate),
+        endDateTime: normalizeDate(record.endsAt ?? record.endDateTime ?? record.endAt ?? record.endDate),
         participants: asNumber(record.participants ?? record.participantsCount ?? record.votersCount ?? record.voteCount, 0),
         voted: Boolean(record.voted ?? record.alreadyVoted ?? record.hasVoted),
         options: rawOptions.map(normalizeElectionOption),
@@ -158,7 +175,7 @@ export function userFromToken(token: string): User | null {
     const authorities = Array.isArray(payload.authorities) ? payload.authorities : Array.isArray(payload.roles) ? payload.roles : []
     return normalizeUser({
         id: payload.userId ?? payload.id ?? payload.sub,
-        firstname: payload.firstname ,
+        firstname: payload.firstname,
         name: payload.name,
         username: payload.username ?? "Unknown",
         email: payload.email,

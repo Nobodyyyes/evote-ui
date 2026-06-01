@@ -3,6 +3,8 @@ import {computed, onMounted, ref} from 'vue'
 import {getElections} from '../api/electionApi'
 import {authState} from '../store/auth'
 import type {Election} from '../types'
+import {formatDateTime} from "../utils/date.ts"
+import {formatRole} from '../utils/labels'
 
 const elections = ref<Election[]>([])
 const loading = ref(false)
@@ -39,8 +41,8 @@ onMounted(loadProfileData)
       <p><strong>Пользователь:</strong> {{ authState.user?.firstname }} {{ authState.user?.name }}</p>
       <p><strong>Логин:</strong> {{ authState.user?.username }}</p>
       <p><strong>Email:</strong> {{ authState.user?.email }}</p>
-      <p><strong>Роль:</strong> {{ authState.user?.role }}</p>
-      <p><strong>Дата и время регистрации:</strong> {{ authState.user?.createdAt }}</p>
+      <p><strong>Роль:</strong> {{ formatRole(authState.user?.role) }}</p>
+      <p><strong>Дата и время регистрации:</strong> {{ formatDateTime(authState.user?.createdAt) }}</p>
       <button class="btn btn-light" type="button">Изменить пароль</button>
     </article>
 
@@ -48,7 +50,7 @@ onMounted(loadProfileData)
       <h2>История участия</h2>
       <div class="simple-list">
         <div v-for="election in votedElections" :key="election.id" class="list-row">
-          <span>{{ election.title }}</span>
+          <span>{{ election.name }}</span>
           <span class="muted">Участвовал</span>
         </div>
         <p v-if="!votedElections.length" class="muted">История участия пока пустая.</p>
