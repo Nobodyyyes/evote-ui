@@ -61,7 +61,7 @@ onMounted(loadUsers)
     <input v-model="search" type="text" placeholder="Поиск по имени, логину или email" />
     <select v-model="role">
       <option value="ALL">Все роли</option>
-      <option value="VOTER">Избиратель</option>
+      <option value="USER">Пользователь</option>
       <option value="ADMIN">Администратор</option>
       <option value="AUDITOR">Аудитор</option>
     </select>

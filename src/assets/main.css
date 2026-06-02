@@ -604,3 +604,33 @@ th {
         min-height: auto;
     }
 }
+.badge-completed {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.badge-canceled,
+.badge-failed {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.badge-confirmed {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.audit-toolbar {
+  grid-template-columns: 180px 1fr 1fr auto;
+}
+
+.blockchain-toolbar {
+  grid-template-columns: 1fr auto;
+}
+
+@media (max-width: 900px) {
+  .audit-toolbar,
+  .blockchain-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

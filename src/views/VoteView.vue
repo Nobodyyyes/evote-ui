@@ -65,7 +65,7 @@ onMounted(loadElection)
 
   <section v-if="election" class="card details-card">
     <h1>Подача голоса</h1>
-    <p class="muted large-text">{{ election.title }}</p>
+    <p class="muted large-text">{{ election.name }}</p>
 
     <form class="form" @submit.prevent="submitVote">
       <label v-for="option in election.options" :key="option.id" class="radio-row">

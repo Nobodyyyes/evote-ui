@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { AuditEvent } from '../../types'
 import { getAuditEvents } from '../../api/auditApi'
 
 const auditEvents = ref<AuditEvent[]>([])
 const search = ref('')
+const objectType = ref('ELECTION')
+const objectId = ref('')
 const loading = ref(false)
 const error = ref('')
 
@@ -14,28 +16,41 @@ const filteredEvents = computed(() => auditEvents.value.filter(event => {
 }))
 
 async function loadAuditEvents(): Promise<void> {
+  if (!objectType.value.trim() || !objectId.value.trim()) {
+    error.value = 'Укажите objectType и objectId. Текущий backend отдает аудит только по конкретному объекту.'
+    auditEvents.value = []
+    return
+  }
+
   loading.value = true
   error.value = ''
+
   try {
-    auditEvents.value = await getAuditEvents()
+    auditEvents.value = await getAuditEvents({ objectType: objectType.value.trim(), objectId: objectId.value.trim() })
   } catch {
     error.value = 'Не удалось загрузить журнал аудита.'
   } finally {
     loading.value = false
   }
 }
-
-onMounted(loadAuditEvents)
 </script>
 
 <template>
   <section class="page-title">
     <h1>Журнал аудита</h1>
-    <p class="muted">События системы: пользователь, действие, дата и описание.</p>
+    <p class="muted">Backend ищет аудит по objectType и objectId.</p>
   </section>
 
-  <section class="card toolbar">
+  <section class="card toolbar audit-toolbar">
+    <select v-model="objectType">
+      <option value="ELECTION">ELECTION</option>
+      <option value="USER">USER</option>
+      <option value="RESULT">RESULT</option>
+      <option value="BLOCKCHAIN_RECORD">BLOCKCHAIN_RECORD</option>
+    </select>
+    <input v-model="objectId" type="text" placeholder="UUID объекта" />
     <input v-model="search" type="text" placeholder="Фильтр по пользователю, событию или описанию" />
+    <button class="btn btn-primary" type="button" @click="loadAuditEvents">Загрузить</button>
   </section>
 
   <p v-if="error" class="error-text">{{ error }}</p>

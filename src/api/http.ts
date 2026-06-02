@@ -78,14 +78,6 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
 
     const url = `${API_BASE_URL}${apiPath(path)}`
 
-    console.log('[API REQUEST]', {
-        method: options.method ?? 'GET',
-        url,
-        skipAuth: options.skipAuth,
-        tokenExists: Boolean(token),
-        authorization: headers.get('Authorization'),
-        body: options.body
-    })
 
     const response = await fetch(url, {
         ...options,

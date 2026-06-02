@@ -1,4 +1,4 @@
-import type {ElectionStatus, Role, UserStatus} from '@/types'
+import type { ElectionStatus, Role, UserStatus } from '../types'
 
 export function formatRole(role?: Role | string | null): string {
     switch (role) {
@@ -32,8 +32,10 @@ export function formatElectionStatus(status?: ElectionStatus | string | null): s
             return 'Запланировано'
         case 'ACTIVE':
             return 'Активно'
-        case 'FINISHED':
+        case 'COMPLETED':
             return 'Завершено'
+        case 'CANCELED':
+            return 'Отменено'
         default:
             return 'Неизвестный статус'
     }

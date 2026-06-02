@@ -12,7 +12,7 @@ const error = ref('')
 
 const filteredElections = computed(() => {
   return elections.value.filter(election => {
-    const matchesSearch = election.title.toLowerCase().includes(search.value.toLowerCase())
+    const matchesSearch = election.name.toLowerCase().includes(search.value.toLowerCase())
     const matchesStatus = status.value === 'ALL' || election.status === status.value
     return matchesSearch && matchesStatus
   })
@@ -46,7 +46,8 @@ onMounted(loadElections)
       <option value="DRAFT">Черновик</option>
       <option value="SCHEDULED">Запланировано</option>
       <option value="ACTIVE">Активно</option>
-      <option value="FINISHED">Завершено</option>
+      <option value="COMPLETED">Завершено</option>
+      <option value="CANCELED">Отменено</option>
     </select>
   </section>
 
@@ -59,7 +60,7 @@ onMounted(loadElections)
         <StatusBadge :status="election.status" />
         <span class="muted">{{ election.startDateTime }} — {{ election.endDateTime }}</span>
       </div>
-      <h2>{{ election.title }}</h2>
+      <h2>{{ election.name }}</h2>
       <p class="muted">{{ election.description }}</p>
       <div class="actions">
         <RouterLink class="btn btn-secondary" :to="`/elections/${election.id}`">Детали</RouterLink>

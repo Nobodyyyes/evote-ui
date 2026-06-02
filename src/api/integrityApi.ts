@@ -4,26 +4,28 @@ import { apiFetch } from './http'
 import { normalizeArrayPayload, normalizeBlockchainRecord } from './normalizers'
 import { USE_MOCKS } from './config'
 
-export async function getBlockchainRecords(): Promise<BlockchainRecord[]> {
+export async function getBlockchainRecords(relatedObjectId?: Id): Promise<BlockchainRecord[]> {
   if (USE_MOCKS) return mockBlockchainRecords
-  const payload = await apiFetch<unknown>('/blockchain/records')
+
+  // Текущий backend не имеет общего GET /blockchain/records.
+  // Он принимает id связанного объекта: /blockchain/records/{relatedObjectId}.
+  if (!relatedObjectId) return []
+
+  const payload = await apiFetch<unknown>(`/blockchain/records/${relatedObjectId}`)
   return normalizeArrayPayload<unknown>(payload).map(normalizeBlockchainRecord)
 }
 
-export async function getIntegrityRecords(): Promise<BlockchainRecord[]> {
-  if (USE_MOCKS) return mockBlockchainRecords
-  const payload = await apiFetch<unknown>('/integrity/records')
-  return normalizeArrayPayload<unknown>(payload).map(normalizeBlockchainRecord)
+export async function getIntegrityRecords(relatedObjectId?: Id): Promise<BlockchainRecord[]> {
+  return getBlockchainRecords(relatedObjectId)
 }
 
-export async function checkIntegrity(electionId?: Id): Promise<string> {
+export async function checkIntegrity(relatedObjectId?: Id): Promise<string> {
   if (USE_MOCKS) return 'Проверка завершена: контрольные значения совпадают.'
 
-  const path = electionId ? `/integrity/elections/${electionId}/check` : '/integrity/check'
-  const payload = await apiFetch<unknown>(path, { method: 'POST' })
-
-  if (payload && typeof payload === 'object' && 'message' in payload) {
-    return String((payload as Record<string, unknown>).message)
+  if (!relatedObjectId) {
+    return 'Укажите ID объекта, чтобы загрузить контрольные blockchain-записи.'
   }
-  return 'Проверка целостности выполнена.'
+
+  await getBlockchainRecords(relatedObjectId)
+  return 'Контрольные blockchain-записи загружены.'
 }

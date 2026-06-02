@@ -32,10 +32,10 @@ onMounted(loadElection)
   <section v-if="election" class="card details-card">
     <div class="card-topline">
       <StatusBadge :status="election.status" />
-      <span class="muted">{{ election.startsAt }} — {{ election.endsAt }}</span>
+      <span class="muted">{{ election.startDateTime }} — {{ election.endDateTime }}</span>
     </div>
 
-    <h1>{{ election.title }}</h1>
+    <h1>{{ election.name }}</h1>
     <p class="muted large-text">{{ election.description }}</p>
 
     <h2>Варианты ответа</h2>

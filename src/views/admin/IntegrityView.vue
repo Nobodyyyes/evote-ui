@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import type { BlockchainRecord } from '../../types'
 import { checkIntegrity as runIntegrityCheck, getIntegrityRecords } from '../../api/integrityApi'
 import StatusBadge from '../../components/StatusBadge.vue'
 
+const route = useRoute()
+const relatedObjectId = ref(String(route.query.objectId ?? ''))
 const records = ref<BlockchainRecord[]>([])
 const message = ref('')
 const loading = ref(false)
@@ -11,10 +14,17 @@ const checking = ref(false)
 const error = ref('')
 
 async function loadRecords(): Promise<void> {
+  if (!relatedObjectId.value.trim()) {
+    records.value = []
+    error.value = 'Укажите relatedObjectId для загрузки контрольных записей.'
+    return
+  }
+
   loading.value = true
   error.value = ''
+
   try {
-    records.value = await getIntegrityRecords()
+    records.value = await getIntegrityRecords(relatedObjectId.value.trim())
   } catch {
     error.value = 'Не удалось загрузить записи для проверки целостности.'
   } finally {
@@ -26,8 +36,9 @@ async function checkIntegrity(): Promise<void> {
   checking.value = true
   error.value = ''
   message.value = ''
+
   try {
-    message.value = await runIntegrityCheck()
+    message.value = await runIntegrityCheck(relatedObjectId.value.trim())
     await loadRecords()
   } catch {
     error.value = 'Не удалось выполнить проверку целостности.'
@@ -36,18 +47,25 @@ async function checkIntegrity(): Promise<void> {
   }
 }
 
-onMounted(loadRecords)
+onMounted(() => {
+  if (relatedObjectId.value) loadRecords()
+})
 </script>
 
 <template>
   <section class="page-title row-title">
     <div>
       <h1>Проверка целостности</h1>
-      <p class="muted">Сверка текущих данных с контрольными hash/blockchain-записями.</p>
+      <p class="muted">В текущем backend доступны blockchain-записи по relatedObjectId.</p>
     </div>
     <button class="btn btn-primary" @click="checkIntegrity" :disabled="checking">
-      {{ checking ? 'Проверка...' : 'Запустить проверку' }}
+      {{ checking ? 'Проверка...' : 'Загрузить записи' }}
     </button>
+  </section>
+
+  <section class="card toolbar blockchain-toolbar">
+    <input v-model="relatedObjectId" type="text" placeholder="relatedObjectId / UUID объекта" />
+    <button class="btn btn-secondary" type="button" @click="loadRecords">Найти</button>
   </section>
 
   <p v-if="message" class="success-box">{{ message }}</p>
@@ -58,7 +76,7 @@ onMounted(loadRecords)
     <table>
       <thead>
         <tr>
-          <th>Голосование</th>
+          <th>Объект</th>
           <th>Hash</th>
           <th>Blockchain статус</th>
           <th>Дата фиксации</th>
@@ -67,7 +85,7 @@ onMounted(loadRecords)
       </thead>
       <tbody>
         <tr v-for="record in records" :key="record.id">
-          <td>{{ record.electionTitle }}</td>
+          <td>{{ record.relatedObjectId || record.electionTitle }}</td>
           <td>{{ record.hash }}</td>
           <td><StatusBadge :status="record.status" /></td>
           <td>{{ record.fixedAt }}</td>

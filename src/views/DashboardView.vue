@@ -10,7 +10,7 @@ const loading = ref(false)
 const error = ref('')
 
 const activeCount = computed(() => elections.value.filter(e => e.status === 'ACTIVE').length)
-const finishedCount = computed(() => elections.value.filter(e => e.status === 'FINISHED').length)
+const finishedCount = computed(() => elections.value.filter(e => e.status === 'COMPLETED').length)
 
 async function loadDashboard(): Promise<void> {
   loading.value = true
@@ -55,8 +55,8 @@ onMounted(loadDashboard)
     <div class="simple-list">
       <div v-for="election in elections" :key="election.id" class="list-row">
         <div>
-          <strong>{{ election.title }}</strong>
-          <p class="muted">Участников: {{ election.participants }}</p>
+          <strong>{{ election.name }}</strong>
+          <p class="muted">{{ election.startDateTime }} — {{ election.endDateTime }}</p>
         </div>
         <StatusBadge :status="election.status"/>
       </div>

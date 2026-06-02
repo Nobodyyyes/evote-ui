@@ -1,27 +1,30 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import type { Election } from '../types'
+import type { ElectionResult, ElectionResultOption } from '../types'
 import { getElectionResults } from '../api/electionApi'
 
 const route = useRoute()
-const election = ref<Election | null>(null)
+const result = ref<ElectionResult | null>(null)
 const loading = ref(false)
 const error = ref('')
-const totalVotes = computed(() => election.value?.options.reduce((sum, option) => sum + option.votes, 0) ?? 0)
 
-function percent(votes: number): number {
+const totalVotes = computed(() => result.value?.totalVotes ?? 0)
+
+function percent(option: ElectionResultOption): number {
+  if (option.percentage > 0) return Math.round(option.percentage)
   if (totalVotes.value === 0) return 0
-  return Math.round((votes / totalVotes.value) * 100)
+  return Math.round((option.votesCount / totalVotes.value) * 100)
 }
 
 async function loadResults(): Promise<void> {
   loading.value = true
   error.value = ''
+
   try {
-    election.value = await getElectionResults(String(route.params.id))
+    result.value = await getElectionResults(String(route.params.id))
   } catch {
-    error.value = 'Не удалось загрузить результаты.'
+    error.value = 'Не удалось загрузить результаты. Возможно, голосование еще не завершено или результаты не рассчитаны.'
   } finally {
     loading.value = false
   }
@@ -34,29 +37,28 @@ onMounted(loadResults)
   <p v-if="loading" class="muted">Загрузка результатов...</p>
   <p v-if="error" class="error-text">{{ error }}</p>
 
-  <section v-if="election" class="card details-card">
+  <section v-if="result" class="card details-card">
     <h1>Результаты</h1>
-    <p class="muted large-text">{{ election.title }}</p>
-    <p><strong>Количество участников:</strong> {{ election.participants }}</p>
-    <p><strong>Дата завершения:</strong> {{ election.endsAt }}</p>
+    <p class="muted large-text">{{ result.electionTitle }}</p>
+    <p><strong>Количество участников:</strong> {{ result.totalVotes }}</p>
+    <p><strong>Дата расчета:</strong> {{ result.calculatedAt || '-' }}</p>
 
     <div class="result-list">
-      <div v-for="option in election.options" :key="option.id" class="result-row">
+      <div v-for="option in result.optionResults" :key="option.optionId" class="result-row">
         <div class="result-header">
-          <strong>{{ option.text }}</strong>
-          <span>{{ option.votes }} голосов / {{ percent(option.votes) }}%</span>
+          <strong>{{ option.optionText }}</strong>
+          <span>{{ option.votesCount }} голосов / {{ percent(option) }}%</span>
         </div>
         <div class="progress">
-          <div class="progress-fill" :style="{ width: `${percent(option.votes)}%` }"></div>
+          <div class="progress-fill" :style="{ width: `${percent(option)}%` }"></div>
         </div>
       </div>
     </div>
 
     <div class="info-box">
-      <p><strong>resultHash:</strong> {{ election.resultHash }}</p>
-      <p><strong>voteHash:</strong> {{ election.voteHash }}</p>
+      <p><strong>resultHash:</strong> {{ result.resultHash || '-' }}</p>
     </div>
 
-    <RouterLink class="btn btn-secondary" to="/admin/integrity">Перейти к проверке целостности</RouterLink>
+    <RouterLink class="btn btn-secondary" :to="`/admin/integrity?objectId=${result.id}`">Перейти к blockchain-записям результата</RouterLink>
   </section>
 </template>

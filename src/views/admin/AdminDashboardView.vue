@@ -15,7 +15,7 @@ const error = ref('')
 
 const activeElections = computed(() => elections.value.filter(e => e.status === 'ACTIVE').length)
 const scheduledElections = computed(() => elections.value.filter(e => e.status === 'SCHEDULED').length)
-const finishedElections = computed(() => elections.value.filter(e => e.status === 'FINISHED').length)
+const finishedElections = computed(() => elections.value.filter(e => e.status === 'COMPLETED').length)
 
 async function loadDashboard(): Promise<void> {
   loading.value = true
