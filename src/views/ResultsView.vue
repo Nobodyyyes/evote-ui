@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import type { ElectionResult, ElectionResultOption } from '../types'
-import { getElectionResults } from '../api/electionApi'
+import {computed, onMounted, ref} from 'vue'
+import {useRoute} from 'vue-router'
+import type {ElectionResult, ElectionResultOption} from '../types'
+import {getElectionResults} from '../api/election.ts'
 
 const route = useRoute()
 const result = ref<ElectionResult | null>(null)
@@ -34,7 +34,7 @@ onMounted(loadResults)
 </script>
 
 <template>
-  <p v-if="loading" class="muted">Загрузка результатов...</p>
+  <p v-if="loading" class="muted">Подсчет результатов...</p>
   <p v-if="error" class="error-text">{{ error }}</p>
 
   <section v-if="result" class="card details-card">
@@ -54,11 +54,5 @@ onMounted(loadResults)
         </div>
       </div>
     </div>
-
-    <div class="info-box">
-      <p><strong>resultHash:</strong> {{ result.resultHash || '-' }}</p>
-    </div>
-
-    <RouterLink class="btn btn-secondary" :to="`/admin/integrity?objectId=${result.id}`">Перейти к blockchain-записям результата</RouterLink>
   </section>
 </template>

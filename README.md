@@ -54,10 +54,10 @@ VITE_API_PREFIX=/api
 src/api/config.ts          # базовый URL backend и prefix API
 src/api/http.ts            # общий fetch-клиент, Bearer token, refresh token
 src/api/tokenStorage.ts    # хранение accessToken/refreshToken
-src/api/authApi.ts         # login/register/logout/me
-src/api/electionApi.ts     # список голосований, детали, создание, голосование, результаты
-src/api/userApi.ts         # пользователи, роли, блокировка
-src/api/auditApi.ts        # журнал аудита
+src/api/auth.ts         # login/register/logout/me
+src/api/election.ts     # список голосований, детали, создание, голосование, результаты
+src/api/user.ts         # пользователи, роли, блокировка
+src/api/audit.ts        # журнал аудита
 src/api/integrityApi.ts    # integrity/blockchain
 src/api/normalizers.ts     # адаптация DTO backend к UI-моделям
 src/store/auth.ts          # состояние авторизации

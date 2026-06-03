@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import type { Id, Role, User } from '../../types'
 import StatusBadge from '../../components/StatusBadge.vue'
-import { getUsers, toggleUserStatus, updateUserRole } from '../../api/userApi'
+import { getUsers, toggleUserStatus, updateUserRole } from '../../api/user.ts'
 
 const users = ref<User[]>([])
 const search = ref('')

@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import StatusBadge from '../components/StatusBadge.vue'
 import type { Election } from '../types'
-import { getElectionById } from '../api/electionApi'
+import { getElectionById } from '../api/election.ts'
 
 const route = useRoute()
 const election = ref<Election | null>(null)

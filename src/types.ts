@@ -6,6 +6,7 @@ export type ElectionStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'C
 export type ElectionResultVisibilityType = 'AFTER_FINISH' | 'AFTER_PUBLISH'
 export type AccessElectionType = 'ALL_AUTHORIZED_USERS' | 'SELECTED_USERS_ONLY'
 export type BlockchainStatus = 'CONFIRMED' | 'FAILED' | 'PENDING' | 'VALID' | 'INVALID'
+export type BlockchainObjectType = 'VOTE' | 'RESULT'
 
 export interface User {
   id: Id
@@ -129,4 +130,12 @@ export interface AuthResponse {
   tokenType?: string
   expiresIn?: number
   user?: User
+}
+
+export type BlockchainObjectReference = {
+    id: string
+    objectType: BlockchainObjectType
+    label: string
+    eventType: string
+    createdAt?: string | null
 }

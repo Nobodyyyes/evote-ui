@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { AuditEvent } from '../../types'
-import { getAuditEvents } from '../../api/auditApi'
+import { getAuditEvents } from '../../api/audit.ts'
 
 const auditEvents = ref<AuditEvent[]>([])
 const search = ref('')

@@ -1,4 +1,4 @@
-import type { ElectionStatus, Role, UserStatus } from '../types'
+import type {AccessElectionType, ElectionStatus, Role, UserStatus} from '../types'
 
 export function formatRole(role?: Role | string | null): string {
     switch (role) {
@@ -38,5 +38,23 @@ export function formatElectionStatus(status?: ElectionStatus | string | null): s
             return 'Отменено'
         default:
             return 'Неизвестный статус'
+    }
+}
+
+export function formatAccessElectionType(status?: AccessElectionType | string | null): string {
+    switch (status) {
+        case 'ALL_AUTHORIZED_USERS':
+            return 'Все авторизованные пользователи'
+        case 'SELECTED_USERS_ONLY':
+            return 'Только выбранные пользователи'
+    }
+}
+
+export function formatBlockchainEventType(status?: string | null) {
+    switch (status) {
+        case 'VOTE_CAST':
+            return 'Голос зафиксирован'
+        case 'RESULT_CALCULATED':
+            return 'Результаты рассчитаны'
     }
 }

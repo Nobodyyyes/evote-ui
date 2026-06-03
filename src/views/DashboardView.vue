@@ -3,7 +3,7 @@ import {computed, onMounted, ref} from 'vue'
 import {authState} from '../store/auth'
 import StatusBadge from '../components/StatusBadge.vue'
 import type {Election} from '../types'
-import {getElections} from '../api/electionApi'
+import {getCompletedElection} from '../api/election.ts'
 
 const elections = ref<Election[]>([])
 const loading = ref(false)
@@ -16,13 +16,14 @@ async function loadDashboard(): Promise<void> {
   loading.value = true
   error.value = ''
   try {
-    elections.value = await getElections()
+    elections.value = await getCompletedElection()
   } catch {
     error.value = 'Не удалось загрузить данные личного кабинета.'
   } finally {
     loading.value = false
   }
 }
+
 onMounted(loadDashboard)
 </script>
 

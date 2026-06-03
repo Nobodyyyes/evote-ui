@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import type { AuthResponse, Role, User } from '../types'
-import { getCurrentUserRequest, loginRequest, logoutRequest, registerRequest } from '../api/authApi'
+import { getCurrentUserRequest, loginRequest, logoutRequest, registerRequest } from '../api/auth.ts'
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from '../api/tokenStorage'
 import { normalizeUser, userFromToken } from '../api/normalizers'
 

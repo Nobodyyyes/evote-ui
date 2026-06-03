@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from 'vue'
-import {getElections} from '../api/electionApi'
+import {getElections} from '../api/election.ts'
 import {authState} from '../store/auth'
 import type {Election} from '../types'
 import {formatDateTime} from "../utils/date.ts"

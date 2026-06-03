@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from 'vue'
 import type {AuditEvent, BlockchainRecord, Election, User} from '../../types'
-import {getAuditEvents} from '../../api/auditApi'
+import {getAuditEvents} from '../../api/audit.ts'
 import {getBlockchainRecords} from '../../api/integrityApi'
-import {getElections} from '../../api/electionApi'
-import {getUsers} from '../../api/userApi'
+import {getElections} from '../../api/election.ts'
+import {getUsers} from '../../api/user.ts'
 
 const elections = ref<Election[]>([])
 const users = ref<User[]>([])
@@ -97,12 +97,6 @@ onMounted(loadDashboard)
           <p>Просмотр, запуск, завершение, удаление и управление статусами голосований.</p>
         </RouterLink>
 
-        <RouterLink class="admin-block-card" to="/admin/integrity">
-          <div class="admin-block-icon">✓</div>
-          <h3>Проверка целостности</h3>
-          <p>Проверка корректности данных и контрольных записей голосований.</p>
-        </RouterLink>
-
         <RouterLink class="admin-block-card" to="/admin/blockchain">
           <div class="admin-block-icon">⛓</div>
           <h3>Blockchain-записи</h3>
@@ -121,26 +115,6 @@ onMounted(loadDashboard)
           <p>Просмотр действий пользователей и системных событий.</p>
         </RouterLink>
       </div>
-    </section>
-
-    <section class="admin-section audit-section">
-      <article class="card audit-card">
-        <h2>Последние события аудита</h2>
-
-        <div v-if="auditEvents.length > 0" class="simple-list">
-          <div v-for="event in auditEvents" :key="event.id" class="list-row">
-            <div>
-              <strong>{{ event.action }}</strong>
-              <p class="muted">{{ event.description }}</p>
-            </div>
-            <span class="muted">{{ event.createdAt }}</span>
-          </div>
-        </div>
-
-        <p v-else class="muted empty-text">
-          Событий аудита пока нет.
-        </p>
-      </article>
     </section>
   </div>
 </template>

@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Election, Id } from '../types'
-import { castVote, getElectionById } from '../api/electionApi'
+import { castVote, getElectionById } from '../api/election.ts'
 
 const route = useRoute()
 const router = useRouter()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {createElection} from '../../api/electionApi'
+import {createElection} from '../../api/election.ts'
 import {authState} from "../../store/auth.ts";
 import {AccessElectionType} from "../../types.ts";
 
