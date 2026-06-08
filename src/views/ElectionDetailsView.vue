@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import {onMounted, ref} from 'vue'
+import {useRoute} from 'vue-router'
 import StatusBadge from '../components/StatusBadge.vue'
-import type { Election } from '../types'
-import { getElectionById } from '../api/election.ts'
+import type {Election} from '../types'
+import {getElectionById} from '../api/election.ts'
 
 const route = useRoute()
 const election = ref<Election | null>(null)
@@ -31,7 +31,7 @@ onMounted(loadElection)
 
   <section v-if="election" class="card details-card">
     <div class="card-topline">
-      <StatusBadge :status="election.status" />
+      <StatusBadge :status="election.status"/>
       <span class="muted">{{ election.startDateTime }} — {{ election.endDateTime }}</span>
     </div>
 
@@ -51,8 +51,10 @@ onMounted(loadElection)
     </div>
 
     <div class="actions">
-      <RouterLink v-if="election.status === 'ACTIVE' && !election.voted" class="btn btn-primary" :to="`/elections/${election.id}/vote`">Проголосовать</RouterLink>
-      <RouterLink class="btn btn-light" :to="`/elections/${election.id}/results`">Посмотреть результаты</RouterLink>
+      <RouterLink v-if="election.status === 'ACTIVE' && !election.voted" class="btn btn-primary"
+                  :to="`/elections/${election.id}/vote`">Проголосовать
+      </RouterLink>
+<!--      <RouterLink class="btn btn-light" :to="`/elections/${election.id}/results`">Посмотреть результаты</RouterLink>-->
     </div>
   </section>
 

@@ -2,7 +2,7 @@
 import {computed, onMounted, ref} from 'vue'
 import type {AuditEvent, BlockchainRecord, Election, User} from '../../types'
 import {getAuditEvents} from '../../api/audit.ts'
-import {getBlockchainRecords} from '../../api/integrityApi'
+import {getBlockchainRecords} from '../../api/integrity.ts'
 import {getElections} from '../../api/election.ts'
 import {getUsers} from '../../api/user.ts'
 
@@ -94,6 +94,12 @@ onMounted(loadDashboard)
         <RouterLink class="admin-block-card" to="/admin/elections">
           <div class="admin-block-icon">🗳</div>
           <h3>Управление голосованиями</h3>
+          <p>Просмотр, запуск, завершение, удаление и управление статусами голосований.</p>
+        </RouterLink>
+
+        <RouterLink class="admin-block-card" to="/admin/integrity">
+          <div class="admin-block-icon">🗳</div>
+          <h3>Проверка целостности</h3>
           <p>Просмотр, запуск, завершение, удаление и управление статусами голосований.</p>
         </RouterLink>
 

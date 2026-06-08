@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import type { Election, ElectionStatus } from '../types'
+import {computed, onMounted, ref} from 'vue'
+import type {Election, ElectionStatus} from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
-import { getElections } from '../api/election.ts'
+import {getElections} from '../api/election.ts'
 
 const elections = ref<Election[]>([])
 const search = ref('')
@@ -71,7 +71,7 @@ onMounted(loadElections)
   </section>
 
   <section class="card toolbar">
-    <input v-model="search" type="text" placeholder="Поиск по названию" />
+    <input v-model="search" type="text" placeholder="Поиск по названию"/>
 
     <select v-model="status">
       <option value="ALL">Все доступные</option>
@@ -90,7 +90,7 @@ onMounted(loadElections)
         class="card election-card"
     >
       <div class="card-topline">
-        <StatusBadge :status="election.status" />
+        <StatusBadge :status="election.status"/>
         <span class="muted">
           {{ election.startDateTime }} — {{ election.endDateTime }}
         </span>

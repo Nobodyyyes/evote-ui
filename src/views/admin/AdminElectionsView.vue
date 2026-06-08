@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import type { Election, Id } from '../../types'
+import {computed, onMounted, ref} from 'vue'
+import type {Election, Id} from '../../types'
 import {
   calculateElectionResults,
   deleteElectionApi,
@@ -9,7 +9,7 @@ import {
   publishElectionResults
 } from '../../api/election.ts'
 import StatusBadge from '../../components/StatusBadge.vue'
-import {formatAccessElectionType, formatElectionStatus} from "../../utils/labels.ts";
+import {formatAccessElectionType} from "../../utils/labels.ts";
 
 const elections = ref<Election[]>([])
 const loading = ref(false)
@@ -21,11 +21,11 @@ type ElectionStatusFilter = 'ALL' | 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'COMPLETE
 const selectedStatus = ref<ElectionStatusFilter>('ALL')
 
 const statusOptions: { value: ElectionStatusFilter; label: string }[] = [
-  { value: 'ALL', label: 'Все статусы' },
-  { value: 'DRAFT', label: 'Черновик' },
-  { value: 'SCHEDULED', label: 'Запланировано' },
-  { value: 'ACTIVE', label: 'Активно' },
-  { value: 'COMPLETED', label: 'Завершено' }
+  {value: 'ALL', label: 'Все статусы'},
+  {value: 'DRAFT', label: 'Черновик'},
+  {value: 'SCHEDULED', label: 'Запланировано'},
+  {value: 'ACTIVE', label: 'Активно'},
+  {value: 'COMPLETED', label: 'Завершено'}
 ]
 
 const filteredElections = computed(() => {
@@ -160,7 +160,9 @@ onMounted(loadElections)
       <tbody>
       <tr v-for="election in filteredElections" :key="election.id">
         <td>{{ election.name }}</td>
-        <td><StatusBadge :status="election.status" /></td>
+        <td>
+          <StatusBadge :status="election.status"/>
+        </td>
         <td>{{ election.startDateTime }} — {{ election.endDateTime }}</td>
         <td>{{ formatAccessElectionType(election.accessElectionType) }}</td>
         <td class="table-actions">

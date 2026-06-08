@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import type { BlockchainObjectReference, BlockchainRecord, Election } from '../../types'
-import {
-  checkIntegrity as runIntegrityCheck,
-  getBlockchainObjects,
-  getIntegrityRecords
-} from '../../api/integrityApi'
-import { getElections } from '../../api/election'
+import {computed, onMounted, ref, watch} from 'vue'
+import {useRoute} from 'vue-router'
+import type {BlockchainObjectReference, BlockchainRecord, Election} from '../../types'
+import {checkIntegrity as runIntegrityCheck, getBlockchainObjects, getIntegrityRecords} from '../../api/integrity.ts'
+import {getElections} from '../../api/election'
 import StatusBadge from '../../components/StatusBadge.vue'
 
 const route = useRoute()
@@ -151,7 +147,7 @@ async function loadRecords(): Promise<void> {
 }
 
 async function checkIntegrity(): Promise<void> {
-  if (!selectedObjectId.value.trim()) {
+  if (!selectedObject.value) {
     error.value = 'Выберите голос или результат, который нужно проверить.'
     return
   }
@@ -159,10 +155,15 @@ async function checkIntegrity(): Promise<void> {
   checking.value = true
   error.value = ''
   message.value = ''
-  searched.value = true
 
   try {
-    message.value = await runIntegrityCheck(selectedObjectId.value.trim())
+    const response = await runIntegrityCheck(
+        selectedObject.value.id,
+        selectedObject.value.objectType
+    )
+
+    message.value = response.message
+
     await loadRecords()
   } catch {
     error.value = 'Не удалось выполнить проверку целостности.'
@@ -379,9 +380,9 @@ onMounted(async () => {
       <strong>{{ objectTypeLabel(selectedObject.objectType) }}</strong>
       <p class="muted">
         {{ eventTypeLabel(selectedObject.eventType) }}
-        <br />
+        <br/>
         ID: {{ selectedObject.id }}
-        <br />
+        <br/>
         Создано: {{ formatDate(selectedObject.createdAt) }}
       </p>
     </div>
@@ -485,7 +486,7 @@ onMounted(async () => {
             </p>
           </div>
 
-          <StatusBadge :status="record.status" />
+          <StatusBadge :status="record.status"/>
         </div>
 
         <div class="record-grid">

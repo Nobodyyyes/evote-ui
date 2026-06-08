@@ -8,25 +8,15 @@ import type {
     ElectionResult,
     Id
 } from '../types'
-import {elections as mockElections} from '../data/mock'
 import {apiFetch} from './http'
 import {normalizeArrayPayload, normalizeElection, normalizeElectionOption, normalizeElectionResult} from './normalizers'
-import {USE_MOCKS} from './config'
-
-function findMockElection(id: Id): Election | undefined {
-    return mockElections.find(election => String(election.id) === String(id))
-}
 
 export async function getElectionOptions(electionId: Id): Promise<ElectionOption[]> {
-    if (USE_MOCKS) return findMockElection(electionId)?.options ?? []
-
     const payload = await apiFetch<unknown>(`/elections/${electionId}/options`)
     return normalizeArrayPayload<unknown>(payload).map(normalizeElectionOption)
 }
 
 export async function getElectionById(id: Id): Promise<Election | null> {
-    if (USE_MOCKS) return findMockElection(id) ?? null
-
     const payload = await apiFetch<unknown>(`/elections/${id}`)
     const election = normalizeElection(payload)
 
@@ -40,17 +30,6 @@ export async function getElectionById(id: Id): Promise<Election | null> {
 }
 
 export async function castVote(request: CastVoteRequest): Promise<void> {
-    if (USE_MOCKS) {
-        const election = findMockElection(request.electionId)
-        if (!election) return
-        const option = election.options.find(item => String(item.id) === String(request.optionId))
-        if (option) option.votes += 1
-        election.voted = true
-        election.participants += 1
-        return
-    }
-
-    // userId намеренно НЕ отправляем. Backend берет текущего пользователя из JWT.
     await apiFetch<void>(`/elections/${request.electionId}/votes`, {
         method: 'POST',
         body: {optionId: request.optionId}
@@ -117,15 +96,8 @@ export async function createElectionOption(electionId: string, request: CreateEl
 }
 
 export async function getElections(): Promise<Election[]> {
-    if (USE_MOCKS) return mockElections
-
     const payload = await apiFetch<unknown>('/elections')
     return normalizeArrayPayload<unknown>(payload).map(normalizeElection)
-}
-
-export async function getActiveElections(): Promise<Election[]> {
-    const elections = await getElections()
-    return elections.filter(election => election.status === 'ACTIVE')
 }
 
 export async function getCompletedElection(): Promise<Election[]> {

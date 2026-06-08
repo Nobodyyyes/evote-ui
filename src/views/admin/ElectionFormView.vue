@@ -82,10 +82,10 @@ async function saveElection(): Promise<void> {
         Тип доступа
         <select v-model="accessElectionType">
           <option
-            v-for="type in accessElectionTypes"
-            :key="type.value"
-            :value="type.value"
-            >
+              v-for="type in accessElectionTypes"
+              :key="type.value"
+              :value="type.value"
+          >
             {{ type.label }}
           </option>
         </select>

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import type { BlockchainObjectReference, BlockchainRecord, Election } from '../../types'
-import { getBlockchainObjects, getBlockchainRecords } from '../../api/integrityApi'
+import { getBlockchainObjects, getBlockchainRecords } from '../../api/integrity.ts'
 import { getElections } from '../../api/election'
 import StatusBadge from '../../components/StatusBadge.vue'
 

@@ -58,7 +58,7 @@ src/api/auth.ts         # login/register/logout/me
 src/api/election.ts     # список голосований, детали, создание, голосование, результаты
 src/api/user.ts         # пользователи, роли, блокировка
 src/api/audit.ts        # журнал аудита
-src/api/integrityApi.ts    # integrity/blockchain
+src/api/integrity.ts    # integrity/blockchain
 src/api/normalizers.ts     # адаптация DTO backend к UI-моделям
 src/store/auth.ts          # состояние авторизации
 ```

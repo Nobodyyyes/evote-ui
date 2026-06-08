@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import type { Election, Id } from '../types'
-import { castVote, getElectionById } from '../api/election.ts'
+import {onMounted, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import type {Election, Id} from '../types'
+import {castVote, getElectionById} from '../api/election.ts'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,7 +46,7 @@ async function submitVote(): Promise<void> {
 
   sending.value = true
   try {
-    await castVote({ electionId: election.value.id, optionId: selectedOptionId.value })
+    await castVote({electionId: election.value.id, optionId: selectedOptionId.value})
     success.value = 'Голос успешно отправлен. Пользователь определён backend по JWT.'
     setTimeout(() => router.push(`/elections/${election.value?.id}/results`), 700)
   } catch {
@@ -69,7 +69,7 @@ onMounted(loadElection)
 
     <form class="form" @submit.prevent="submitVote">
       <label v-for="option in election.options" :key="option.id" class="radio-row">
-        <input v-model="selectedOptionId" type="radio" :value="option.id" :disabled="election.voted || sending" />
+        <input v-model="selectedOptionId" type="radio" :value="option.id" :disabled="election.voted || sending"/>
         {{ option.text }}
       </label>
 

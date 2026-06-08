@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { authState, logout } from '../store/auth'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {authState, logout} from '../store/auth'
+import {formatRole} from "../utils/labels.ts";
 
 const router = useRouter()
 const user = computed(() => authState.user)
@@ -12,7 +13,11 @@ async function handleLogout(): Promise<void> {
 }
 
 function isAdminRole(role: string): boolean {
-  return role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'ELECTION_ADMIN'
+  return role === 'ADMIN'
+}
+
+function isAuditorRole(role:string):boolean {
+  return role === 'AUDITOR'
 }
 </script>
 
@@ -26,15 +31,19 @@ function isAdminRole(role: string): boolean {
 
       <template v-if="user">
         <RouterLink to="/dashboard">Кабинет</RouterLink>
-        <RouterLink to="/elections">Голосования</RouterLink>
+
+        <RouterLink v-if="!isAuditorRole(user?.role)" to="/elections">Голосования</RouterLink>
+
         <RouterLink to="/profile">Профиль</RouterLink>
+
         <RouterLink v-if="isAdminRole(user.role)" to="/admin">Админ-панель</RouterLink>
+
         <RouterLink v-if="user.role === 'AUDITOR'" to="/admin/audit">Аудит</RouterLink>
       </template>
     </nav>
 
     <div v-if="user" class="user-box">
-      <span>{{ user.username }} / {{ user.role }}</span>
+      <span>{{ user.username }} / {{ formatRole(user.role) }}</span>
       <button class="btn btn-light" @click="handleLogout">Выйти</button>
     </div>
   </header>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { authState, login } from '../store/auth'
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {authState, login} from '../store/auth'
 
 const router = useRouter()
 const username = ref('voter')
@@ -29,12 +29,12 @@ async function submit(): Promise<void> {
     <form @submit.prevent="submit" class="form">
       <label>
         Логин или email
-        <input v-model="username" type="text" placeholder="voter" />
+        <input v-model="username" type="text" placeholder="voter"/>
       </label>
 
       <label>
         Пароль
-        <input v-model="password" type="password" placeholder="Введите пароль" />
+        <input v-model="password" type="password" placeholder="Введите пароль"/>
       </label>
 
       <p v-if="error" class="error-text">{{ error }}</p>
