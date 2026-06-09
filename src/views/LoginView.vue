@@ -2,6 +2,7 @@
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {authState, login} from '../store/auth'
+import {getDefaultRoute} from "../api/auth.ts";
 
 const router = useRouter()
 const username = ref('voter')
@@ -17,7 +18,7 @@ async function submit(): Promise<void> {
     return
   }
 
-  router.push('/dashboard')
+  await router.replace(getDefaultRoute())
 }
 </script>
 

@@ -1,4 +1,4 @@
-import type {AccessElectionType, ElectionStatus, Role} from '../types'
+import type {AccessElectionType, Role} from '../types'
 
 export function formatRole(role?: Role | string | null): string {
     switch (role) {
@@ -10,23 +10,6 @@ export function formatRole(role?: Role | string | null): string {
             return 'Аудитор'
         default:
             return 'Неизвестная роль'
-    }
-}
-
-export function formatElectionStatus(status?: ElectionStatus | string | null): string {
-    switch (status) {
-        case 'DRAFT':
-            return 'Черновик'
-        case 'SCHEDULED':
-            return 'Запланировано'
-        case 'ACTIVE':
-            return 'Активно'
-        case 'COMPLETED':
-            return 'Завершено'
-        case 'CANCELED':
-            return 'Отменено'
-        default:
-            return 'Неизвестный статус'
     }
 }
 

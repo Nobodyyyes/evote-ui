@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
-import type {BlockchainObjectReference, BlockchainRecord, Election} from '../../types'
-import {checkIntegrity as runIntegrityCheck, getBlockchainObjects, getIntegrityRecords} from '../../api/integrity.ts'
-import {getElections} from '../../api/election'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import type { BlockchainObjectReference, BlockchainRecord, Election } from '../../types'
+import { checkIntegrity as runIntegrityCheck, getBlockchainObjects, getIntegrityRecords } from '../../api/integrity.ts'
+import { getElections } from '../../api/election'
 import StatusBadge from '../../components/StatusBadge.vue'
+
+type IntegrityState = 'success' | 'danger' | 'neutral'
+
+type IntegrityCheckApiResponse = {
+  valid?: boolean | string | null
+  message?: string | null
+}
 
 const route = useRoute()
 
@@ -26,6 +33,8 @@ const loadingObjects = ref(false)
 const loadingRecords = ref(false)
 const checking = ref(false)
 
+const isIntegrityValid = ref<boolean | null>(null)
+
 const filteredObjects = computed(() => {
   if (selectedObjectType.value === 'ALL') {
     return integrityObjects.value
@@ -40,29 +49,17 @@ const selectedObject = computed(() => {
 
 const hasRecords = computed(() => records.value.length > 0)
 
-const integrityState = computed<'success' | 'danger' | 'neutral'>(() => {
-  const text = message.value.toLowerCase()
-
-  if (!text) {
+const integrityState = computed<IntegrityState>(() => {
+  if (!message.value) {
     return 'neutral'
   }
 
-  if (
-      text.includes('наруш') ||
-      text.includes('измен') ||
-      text.includes('не совп') ||
-      text.includes('ошиб')
-  ) {
-    return 'danger'
+  if (isIntegrityValid.value === true) {
+    return 'success'
   }
 
-  if (
-      text.includes('подтверж') ||
-      text.includes('совп') ||
-      text.includes('не измен') ||
-      text.includes('успеш')
-  ) {
-    return 'success'
+  if (isIntegrityValid.value === false) {
+    return 'danger'
   }
 
   return 'neutral'
@@ -99,6 +96,7 @@ async function loadIntegrityObjects(): Promise<void> {
     selectedObjectId.value = ''
     records.value = []
     message.value = ''
+    isIntegrityValid.value = null
     searched.value = false
     return
   }
@@ -106,6 +104,7 @@ async function loadIntegrityObjects(): Promise<void> {
   loadingObjects.value = true
   error.value = ''
   message.value = ''
+  isIntegrityValid.value = null
   records.value = []
   searched.value = false
 
@@ -155,6 +154,7 @@ async function checkIntegrity(): Promise<void> {
   checking.value = true
   error.value = ''
   message.value = ''
+  isIntegrityValid.value = null
 
   try {
     const response = await runIntegrityCheck(
@@ -162,14 +162,85 @@ async function checkIntegrity(): Promise<void> {
         selectedObject.value.objectType
     )
 
-    message.value = response.message
+    const normalizedResponse = normalizeIntegrityResponse(response)
+
+    message.value = normalizedResponse.message
+    isIntegrityValid.value = normalizedResponse.valid
 
     await loadRecords()
   } catch {
+    message.value = ''
+    isIntegrityValid.value = null
     error.value = 'Не удалось выполнить проверку целостности.'
   } finally {
     checking.value = false
   }
+}
+
+function normalizeIntegrityResponse(response: unknown): { message: string; valid: boolean | null } {
+  if (typeof response === 'string') {
+    return {
+      message: response,
+      valid: detectIntegrityValidByMessage(response)
+    }
+  }
+
+  const record = response as IntegrityCheckApiResponse
+
+  const responseMessage = String(record?.message ?? 'Проверка целостности выполнена.')
+  const responseValid = normalizeValidValue(record?.valid, responseMessage)
+
+  return {
+    message: responseMessage,
+    valid: responseValid
+  }
+}
+
+function normalizeValidValue(value: unknown, responseMessage: string): boolean | null {
+  if (typeof value === 'boolean') {
+    return value
+  }
+
+  if (typeof value === 'string') {
+    const normalizedValue = value.trim().toLowerCase()
+
+    if (normalizedValue === 'true' || normalizedValue === 'valid' || normalizedValue === 'success') {
+      return true
+    }
+
+    if (normalizedValue === 'false' || normalizedValue === 'invalid' || normalizedValue === 'failed') {
+      return false
+    }
+  }
+
+  return detectIntegrityValidByMessage(responseMessage)
+}
+
+function detectIntegrityValidByMessage(value: string): boolean | null {
+  const text = value.toLowerCase()
+
+  if (
+      text.includes('подтвержд') ||
+      text.includes('успеш') ||
+      text.includes('hash совп') ||
+      text.includes('хэш совп') ||
+      text.includes('не измен')
+  ) {
+    return true
+  }
+
+  if (
+      text.includes('наруш') ||
+      text.includes('не пройд') ||
+      text.includes('не совп') ||
+      text.includes('ошиб') ||
+      text.includes('изменен') ||
+      text.includes('изменён')
+  ) {
+    return false
+  }
+
+  return null
 }
 
 function clearSelection(): void {
@@ -177,6 +248,7 @@ function clearSelection(): void {
   selectedObjectId.value = ''
   records.value = []
   message.value = ''
+  isIntegrityValid.value = null
   error.value = ''
   searched.value = false
 }
@@ -288,6 +360,15 @@ watch(selectedObjectType, () => {
   selectedObjectId.value = ''
   records.value = []
   message.value = ''
+  isIntegrityValid.value = null
+  searched.value = false
+  error.value = ''
+})
+
+watch(selectedObjectId, () => {
+  message.value = ''
+  isIntegrityValid.value = null
+  records.value = []
   searched.value = false
   error.value = ''
 })
@@ -380,9 +461,9 @@ onMounted(async () => {
       <strong>{{ objectTypeLabel(selectedObject.objectType) }}</strong>
       <p class="muted">
         {{ eventTypeLabel(selectedObject.eventType) }}
-        <br/>
+        <br />
         ID: {{ selectedObject.id }}
-        <br/>
+        <br />
         Создано: {{ formatDate(selectedObject.createdAt) }}
       </p>
     </div>
@@ -486,7 +567,7 @@ onMounted(async () => {
             </p>
           </div>
 
-          <StatusBadge :status="record.status"/>
+          <StatusBadge :status="record.status" />
         </div>
 
         <div class="record-grid">

@@ -1,7 +1,8 @@
-import type {AuthResponse, LoginRequest, RegisterRequest, User} from '../types'
+import type {AuthResponse, LoginRequest, RegisterRequest, Role, User} from '../types'
 import {apiFetch} from './http'
 import {getAccessToken} from './tokenStorage'
 import {userFromToken} from './normalizers'
+import {authState} from "../store/auth.ts";
 
 export async function loginRequest(request: LoginRequest): Promise<AuthResponse> {
     return apiFetch<AuthResponse>('/auth/login', {
@@ -9,8 +10,7 @@ export async function loginRequest(request: LoginRequest): Promise<AuthResponse>
         body: {
             username: request.username,
             password: request.password
-        },
-        skipAuth: true
+        }
     })
 }
 
@@ -24,15 +24,16 @@ export async function registerRequest(request: RegisterRequest): Promise<AuthRes
             email: request.email,
             password: request.password,
             confirmPassword: request.confirmPassword
-        },
-        skipAuth: true
+        }
     })
 }
 
 export async function logoutRequest(refreshToken: string | null): Promise<void> {
     await apiFetch<void>('/auth/logout', {
         method: 'POST',
-        body: {refreshToken}
+        body: {
+            refreshToken
+        }
     })
 }
 
@@ -45,4 +46,21 @@ export async function getCurrentUserRequest(): Promise<User> {
     }
 
     return user
+}
+
+export function redirectDefaultRouteByRole(role?: Role): string {
+    switch (role) {
+        case 'ADMIN':
+            return '/admin'
+        case 'AUDITOR':
+            return '/admin/audit'
+        case 'USER':
+            return '/dashboard'
+        default:
+            return '/dashboard'
+    }
+}
+
+export function getDefaultRoute(): string {
+    return redirectDefaultRouteByRole(authState.user?.role)
 }

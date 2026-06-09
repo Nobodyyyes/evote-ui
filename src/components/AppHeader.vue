@@ -9,7 +9,7 @@ const user = computed(() => authState.user)
 
 async function handleLogout(): Promise<void> {
   await logout()
-  router.push('/')
+  router.push('/login')
 }
 
 function isAdminRole(role: string): boolean {
@@ -39,6 +39,8 @@ function isAuditorRole(role:string):boolean {
         <RouterLink v-if="isAdminRole(user.role)" to="/admin">Админ-панель</RouterLink>
 
         <RouterLink v-if="user.role === 'AUDITOR'" to="/admin/audit">Аудит</RouterLink>
+
+        <RouterLink v-if="isAuditorRole(user.role)" to="/admin/integrity">Проверка целостности</RouterLink>
       </template>
     </nav>
 
